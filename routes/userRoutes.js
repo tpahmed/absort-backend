@@ -1,7 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -50,19 +50,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-const protect = async (req, res, next) => {
-  let token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "Not authorized, no token" });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select("-password");
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "Not authorized, token failed" });
-  }
-};
-
 // Get user profile
 router.get("/profile", protect, async (req, res) => {
   res.json(req.user);
@@ -75,7 +62,7 @@ router.put("/profile", protect, async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const fields = ["name", "email", "phone", "address", "city", "zipCode", "country"];
+    const fields = ["name", "phone", "address", "city", "zipCode", "country"];
     fields.forEach((field) => {
       if (req.body[field] !== undefined) user[field] = req.body[field];
     });
