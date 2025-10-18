@@ -1,4 +1,5 @@
 import Order from "../models/Order.js";
+import User from "../models/User.js";
 
 export const createOrder = async (req, res) => {
   try {
@@ -10,7 +11,8 @@ export const createOrder = async (req, res) => {
       shipping,
       total,
       paymentMethod,
-      status
+      status,
+      saveInfo,
     } = req.body;
 
     if (!items || items.length === 0) {
@@ -25,16 +27,34 @@ export const createOrder = async (req, res) => {
       shipping,
       total,
       paymentMethod,
-      status
+      status,
     });
 
     const createdOrder = await order.save();
+
+    if (saveInfo && shippingInfo) {
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $set: {
+            name: shippingInfo.fullName,
+            phone: shippingInfo.phone,
+            address: shippingInfo.address,
+            city: shippingInfo.city,
+            zipCode: shippingInfo.zipCode,
+          },
+        },
+        { new: true }
+      );
+    }
+
     res.status(201).json(createdOrder);
   } catch (error) {
     console.error("Error creating order:", error);
     res.status(500).json({ message: "Server error while creating order" });
   }
 };
+
 
 export const getUserOrders = async (req, res) => {
   try {

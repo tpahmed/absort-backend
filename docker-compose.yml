@@ -7,13 +7,15 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      - "${PORT:-5000}:5000"
+      - "${PORT:-5000}:${PORT:-5000}"
     depends_on:
       - mongo
     environment:
       - MONGO_URI=${MONGO_URI:-mongodb://mongo:27017/ecommerce}
       - JWT_SECRET=${JWT_SECRET:-changeme}
     command: ["npm", "start"]
+    volumes:
+      - roselle_uploads:/uploads
 
   mongo:
     image: mongo:7.0
@@ -23,8 +25,7 @@ services:
       - MONGO_INITDB_DATABASE=ecommerce
     volumes:
       - mongo_data:/data/db
-    ports:
-      - "27017:27017"
 
 volumes:
   mongo_data:
+  roselle_uploads:
