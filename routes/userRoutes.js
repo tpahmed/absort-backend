@@ -199,4 +199,42 @@ router.put("/change-password", protect, async (req, res) => {
   }
 });
 
+// Delete account
+router.delete("/delete-account", protect, async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    // Validate input
+    if (!password) {
+      return res.status(400).json({ 
+        message: "Password is required to delete account" 
+      });
+    }
+
+    // Find user
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify password
+    const isPasswordValid = await user.matchPassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Password is incorrect" });
+    }
+
+    // Delete user account
+    await User.findByIdAndDelete(req.user._id);
+
+    res.json({ 
+      message: "Account deleted successfully",
+      success: true 
+    });
+  } catch (error) {
+    console.error("Delete account error:", error);
+    res.status(500).json({ message: "Server error while deleting account" });
+  }
+});
+
 export default router;
