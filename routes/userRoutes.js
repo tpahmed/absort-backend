@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import passport from "passport";
 import User from "../models/User.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -104,6 +105,22 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// --- GOOGLE ---
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { session: false, failureRedirect: "/auth?error=google" }),
+  (req, res) => {
+    const token = req.user.token;
+    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+  }
+);
+
 
 // Get user profile
 router.get("/profile", protect, async (req, res) => {
