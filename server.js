@@ -17,10 +17,24 @@ import orderRoutes from "./routes/orderRoutes.js";
 
 dotenv.config();
 
+const allowedOrigins = [
+  "https://rosellebeauty.ma",
+];
+
 const app = express();
 
 app.use(passport.initialize());
-app.use(cors());
+app.use(cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }));
 app.use(express.json());
 
 const __dirname = path.resolve();

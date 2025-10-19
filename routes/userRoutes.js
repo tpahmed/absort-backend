@@ -121,7 +121,6 @@ router.get(
   }
 );
 
-
 // Get user profile
 router.get("/profile", protect, async (req, res) => {
   res.json(req.user);
@@ -139,12 +138,64 @@ router.put("/profile", protect, async (req, res) => {
       if (req.body[field] !== undefined) user[field] = req.body[field];
     });
 
-    if (req.body.password) user.password = req.body.password;
-
     const updatedUser = await user.save();
     res.json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// Change password
+router.put("/change-password", protect, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ 
+        message: "Current password and new password are required" 
+      });
+    }
+
+    // Validate new password length
+    if (newPassword.length < 6) {
+      return res.status(400).json({ 
+        message: "New password must be at least 6 characters long" 
+      });
+    }
+
+    // Find user
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify current password
+    const isPasswordValid = await user.matchPassword(currentPassword);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    // Check if new password is different from current
+    const isSamePassword = await user.matchPassword(newPassword);
+    if (isSamePassword) {
+      return res.status(400).json({ 
+        message: "New password must be different from current password" 
+      });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ 
+      message: "Password changed successfully",
+      success: true 
+    });
+  } catch (error) {
+    console.error("Change password error:", error);
+    res.status(500).json({ message: "Server error while changing password" });
   }
 });
 
