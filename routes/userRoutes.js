@@ -2,6 +2,8 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 import passport from "passport";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -103,6 +105,90 @@ router.post("/login", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// Forgot Password
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "No user found with that email" });
+    }
+
+    // Create reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    // Save hashed token and expiry
+    user.resetPasswordToken = resetTokenHash;
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
+    await user.save({ validateBeforeSave: false });
+
+    // Build reset URL (frontend)
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    // Email message
+    const message = `
+      You requested a password reset for your Roselle Beauty account.
+      Please click the link below to reset your password:
+      ${resetUrl}
+
+      This link will expire in 15 minutes.
+      If you didn’t request this, just ignore this email.
+    `;
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Roselle Beauty" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Password Reset Request",
+      text: message,
+    });
+
+    res.json({ success: true, message: "Password reset email sent" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Error sending reset email" });
+  }
+});
+
+// Reset Password
+router.post("/reset-password/:token", async (req, res) => {
+  try {
+    const resetTokenHash = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: resetTokenHash,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Password reset successful" });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: "Error resetting password" });
   }
 });
 

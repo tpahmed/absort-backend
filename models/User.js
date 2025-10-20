@@ -12,8 +12,10 @@ const userSchema = new mongoose.Schema(
     zipCode: { type: String },
     country: { type: String },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+    resetPasswordToken: { type: String },
+    resetPasswordExpire: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Hash password before saving
