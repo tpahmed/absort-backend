@@ -48,7 +48,7 @@ export const createOrder = async (req, res) => {
 
     // Validate required shipping info
     if (!shippingInfo || !shippingInfo.fullName || !shippingInfo.phone || 
-        !shippingInfo.address || !shippingInfo.city || !shippingInfo.zipCode) {
+        !shippingInfo.address || !shippingInfo.city) {
       return res.status(400).json({ message: "Missing required shipping information" });
     }
 
@@ -82,7 +82,6 @@ export const createOrder = async (req, res) => {
             phone: shippingInfo.phone,
             address: shippingInfo.address,
             city: shippingInfo.city,
-            zipCode: shippingInfo.zipCode,
           },
         },
         { new: true }
