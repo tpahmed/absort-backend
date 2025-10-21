@@ -139,6 +139,7 @@ router.post("/forgot-password", async (req, res) => {
       If you didn’t request this, just ignore this email.
     `;
 
+    console.log(process.env)
     // Send email
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -154,12 +155,22 @@ router.post("/forgot-password", async (req, res) => {
       }
     });
 
-    await transporter.sendMail({
+    await transporter.verify((error, success) => {
+      if (error) {
+        console.error("SMTP verification failed:", error);
+      } else {
+        console.log("SMTP is ready to send:", success);
+      }
+    });
+
+    const info = await transporter.sendMail({
       from: `"Roselle Beauty" <${process.env.SMTP_USER}>`,
       to: email,
       subject: "Password Reset Request",
       text: message,
     });
+
+    console.log("Mail response:", info);
 
     res.json({ success: true, message: "Password reset email sent" });
   } catch (error) {
