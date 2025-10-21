@@ -152,16 +152,11 @@ router.post("/forgot-password", async (req, res) => {
       tls: {
         // Don’t fail on self-signed certs (optional, for local)
         rejectUnauthorized: false
-      }
+      },
+      logger: true, // logs to console
+      debug: true,  // detailed SMTP output
     });
 
-    await transporter.verify((error, success) => {
-      if (error) {
-        console.error("SMTP verification failed:", error);
-      } else {
-        console.log("SMTP is ready to send:", success);
-      }
-    });
 
     const info = await transporter.sendMail({
       from: `"Roselle Beauty" <${process.env.SMTP_USER}>`,
