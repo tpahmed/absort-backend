@@ -149,10 +149,6 @@ router.post("/forgot-password", async (req, res) => {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-      tls: {
-        // Don’t fail on self-signed certs (optional, for local)
-        rejectUnauthorized: false
-      },
       logger: true, // logs to console
       debug: true,  // detailed SMTP output
     });

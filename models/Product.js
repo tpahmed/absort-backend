@@ -9,13 +9,16 @@ const productSchema = new mongoose.Schema({
   details: String,
   images: [String],
   variants: {
-    sizes: [String],
-    color: [String],
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   },
   stock: [[String]],
   brand: String,
   type: [String],
-  collectionId: Number,
+  collections: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Collection'
+  }],
   new: Boolean,
   best: Boolean
 });
