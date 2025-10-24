@@ -14,9 +14,10 @@ router.get('/', async (req, res) => {
           id: '$_id',      // Rename the default '_id' to 'id'
           _id: 1,          // Exclude the original '_id' field
           images: 1,       // Include the 'images' field
+          collections: 1,  // Include the 'collections' field
           title: 1,        // Include the 'title' field
           price: 1,        // Include the 'price' field
-          new: 1,   // Rename the 'new' field to 'isNew'
+          new: 1,          // Include the 'new' field
           best: 1,         // Include the 'best' field
           variants: 1,     // Include the 'variants' field
           stock: 1         // Include the 'stock' field
