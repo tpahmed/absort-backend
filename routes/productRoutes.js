@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
           images: 1,       // Include the 'images' field
           title: 1,        // Include the 'title' field
           price: 1,        // Include the 'price' field
-          isNew: '$new',   // Rename the 'new' field to 'isNew'
+          new: 1,   // Rename the 'new' field to 'isNew'
           best: 1,         // Include the 'best' field
           variants: 1,     // Include the 'variants' field
           stock: 1         // Include the 'stock' field
