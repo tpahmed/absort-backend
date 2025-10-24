@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
       {
         $project: {
           id: '$_id',      // Rename the default '_id' to 'id'
-          _id: 0,          // Exclude the original '_id' field
+          _id: 1,          // Exclude the original '_id' field
           images: 1,       // Include the 'images' field
           title: 1,        // Include the 'title' field
           price: 1,        // Include the 'price' field
